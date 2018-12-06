@@ -2,9 +2,10 @@ use rscam::{Camera, Frame, Config};
 
 use std::io::Write;
 use std::path::PathBuf;
-use std::{io, fs, time};
+use std::{io, fs};
 
 use cli::CamControls;
+use utils::get_timestamp_us;
 
 const TARG_FPS: u64 = 50; // externall trigger freq
 
@@ -25,7 +26,7 @@ const EXPOSURE_TIME_US_ID: u32 = 0x0199E201;
 const GAIN_ID: u32 = 0x00980913;
 const GAIN_AUTO_ID: u32 = 0x0199E205;
 
-const HIGHLIGHT_REDUCTION_ID: u32 = 26862163;
+const HIGHLIGHT_REDUCTION_ID: u32 = 0x0199E253;
 
 pub fn configure_camera(dev: &str, ctrls: &CamControls) -> io::Result<()> {
     let cam = Camera::new(dev)?;
@@ -73,12 +74,10 @@ fn get_camera(dev: &str, ctrls: &CamControls) -> io::Result<Camera> {
 }
 
 fn save_frame(frame: &Frame, mut path: PathBuf) -> io::Result<()> {
-    let dt = time::SystemTime::now().duration_since(time::UNIX_EPOCH).unwrap();
-    let t_abs = 1000*(dt.as_secs() as u64) + (dt.subsec_nanos() as u64)/1_000_000;
-
+    let t_abs = get_timestamp_us();
     let t = frame.get_timestamp();
 
-    path.push(format!("{}_{}.pnm", t_abs, t/1000));
+    path.push(format!("{}_{}.pnm", t_abs, t));
     let mut f = fs::File::create(path)?;
     f.write_all(b"P5\n2448 2048\n255\n")?;
     f.write_all(&frame)?;
