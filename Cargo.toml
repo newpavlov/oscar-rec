@@ -1,0 +1,9 @@
+[package]
+name = "cam_rec"
+version = "0.1.0"
+authors = ["newpavlov <newpavlov@gmail.com>"]
+
+[dependencies]
+rscam = "^0.5.4"
+serial = "0.4"
+inter_sense = { path = "../inter_sense/" }
