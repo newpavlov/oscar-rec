@@ -94,13 +94,13 @@ fn check_timing(cam_dev: &str, t: u64, prev: u64) {
     }
 }
 
-pub fn record(path: PathBuf, cam_dev: &str, ctrls: &CamControls) {
+pub fn record(path: PathBuf, cam_dev: &str, ctrls: &CamControls) -> io::Result<()> {
     fs::create_dir_all(&path).unwrap();
-    let cam = get_camera(cam_dev, ctrls).expect("Failed to get camera");
+    let cam = get_camera(cam_dev, ctrls)?;
 
     // clear empty frames
     for _ in 0..BUF_NUM {
-        let frame = cam.capture().unwrap();
+        let frame = cam.capture()?;
         if frame.len() != 0 {
             println!("Init drop got non-zero frames [{}]: {}",
                 cam_dev, frame.len());
@@ -109,7 +109,7 @@ pub fn record(path: PathBuf, cam_dev: &str, ctrls: &CamControls) {
 
     let mut prev = 0;
     loop {
-        let frame = cam.capture().unwrap();
+        let frame = cam.capture()?;
         let t = frame.get_timestamp();
         if prev != 0 {
             check_timing(cam_dev, t, prev);
@@ -122,6 +122,6 @@ pub fn record(path: PathBuf, cam_dev: &str, ctrls: &CamControls) {
             println!("Bad frame len [{}]: {}", cam_dev, frame.len());
             continue
         }
-        save_frame(&frame, path.clone()).unwrap();
+        save_frame(&frame, path.clone())?;
     }
 }

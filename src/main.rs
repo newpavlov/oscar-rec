@@ -6,13 +6,15 @@ extern crate structopt;
 
 use std::path::Path;
 use std::process::Command;
-use std::{thread, time, fs, mem};
+use std::{thread, fs};
 
 use structopt::StructOpt;
 
 mod cam;
 mod gps;
+mod imu;
 mod cli;
+mod utils;
 
 //tcpdump -s 1248 -i enp2s0 -w test.pcap port 2368
 fn record_velodyne(path: &Path, interf: &str)  {
@@ -27,23 +29,8 @@ fn record_velodyne(path: &Path, interf: &str)  {
         .expect("failed to execute process");
 }
 
-// timestamp in microseconds of UNIX epoch
-fn get_timestamp_us() -> u64 {
-    let t = time::SystemTime::now()
-        .duration_since(time::SystemTime::UNIX_EPOCH)
-        .unwrap();
-    1_000_000*t.as_secs() + (t.subsec_micros() as u64)
-}
-
-fn record_imu(path: &Path) {
-    let name = format!("imu.{}.bin", get_timestamp_us());
-    inter_sense::record(&path.join(name)).expect("Failed to record IMU");
-}
-
 fn to_static<T: Sized>(s: T) -> &'static T {
-    let ret = unsafe { mem::transmute(&s as &T) };
-    mem::forget(s);
-    ret
+    Box::leak(Box::new(s))
 }
 
 fn main() {
@@ -51,15 +38,30 @@ fn main() {
 
     fs::create_dir_all(&args.path).unwrap();
 
-    let path1 = args.path.join("cam1");
-    thread::spawn(move|| cam::record(path1, "/dev/video0", &args.cam_ctrls));
+    thread::Builder::new().name("cam1".into())
+        .spawn(move|| {
+            let path = args.path.join("cam1");
+            cam::record(path, "/dev/video0", &args.cam_ctrls)
+                .expect("Failed to record camera 1")
+        }).unwrap();
 
-    let path2 = args.path.join("cam2");
-    thread::spawn(move|| cam::record(path2, "/dev/video1", &args.cam_ctrls));
+    thread::Builder::new().name("cam2".into())
+        .spawn(move|| {
+            let path = args.path.join("cam2");
+            cam::record(path, "/dev/video1", &args.cam_ctrls)
+                .expect("Failed to record camera 2")
+        }).unwrap();
 
-    thread::spawn(move|| gps::record(&args.path, "/dev/ttyUSB1").expect("Failed to get GPS"));
+    thread::Builder::new().name("gps".into())
+        .spawn(move|| {
+            gps::record(&args.path, "/dev/ttyUSB1")
+                .expect("failed to record GPS")
+        }).unwrap();
 
-    thread::spawn(move|| record_imu(&args.path));
+    thread::Builder::new().name("imu".into())
+        .spawn(move|| {
+            imu::record(&args.path).expect("failed to record IMU")
+        }).unwrap();
 
     record_velodyne(&args.path, "enp3s0");
 }
