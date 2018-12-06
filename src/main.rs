@@ -41,11 +41,9 @@ fn record_imu(path: &Path) {
 }
 
 fn to_static<T: Sized>(s: T) -> &'static T {
-    unsafe {
-        let ret = mem::transmute(&s as &T);
-        mem::forget(s);
-        ret
-    }
+    let ret = unsafe { mem::transmute(&s as &T) };
+    mem::forget(s);
+    ret
 }
 
 fn main() {
