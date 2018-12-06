@@ -4,8 +4,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{io, fs, time};
 
-const CAM_GAIN: u32 = 0;
-const CAM_EXPOSURE: u32 = 7500;
+use cli::CamControls;
+
 const TARG_FPS: u64 = 50; // externall trigger freq
 
 const CAM_W: usize = 2448;
@@ -27,7 +27,7 @@ const GAIN_AUTO_ID: u32 = 0x0199E205;
 
 const HIGHLIGHT_REDUCTION_ID: u32 = 26862163;
 
-pub fn configure_camera(dev: &str) -> io::Result<()> {
+pub fn configure_camera(dev: &str, ctrls: &CamControls) -> io::Result<()> {
     let cam = Camera::new(dev)?;
     /*
     for control in cam.controls() {
@@ -41,7 +41,7 @@ pub fn configure_camera(dev: &str) -> io::Result<()> {
     cam.set_control(TRIGGER_DELAY_ID, 0)?;
     cam.set_control(TRIGGER_MODE_ID, true)?;
     cam.set_control(SHUTTER_AUTO_ID, false)?;
-    cam.set_control(EXPOSURE_TIME_US_ID, CAM_EXPOSURE)?;
+    cam.set_control(EXPOSURE_TIME_US_ID, ctrls.exposure)?;
 
     cam.set_control(WB_AUTO_ID, false)?;
     cam.set_control(WB_RED_ID, 121i32)?;
@@ -49,15 +49,15 @@ pub fn configure_camera(dev: &str) -> io::Result<()> {
     cam.set_control(WB_GREEN_ID, 0i32)?;
 
     cam.set_control(GAIN_AUTO_ID, false)?;
-    cam.set_control(GAIN_ID, CAM_GAIN)?;
+    cam.set_control(GAIN_ID, ctrls.gain)?;
 
     cam.set_control(HIGHLIGHT_REDUCTION_ID, false)?;
     Ok(())
 }
 
-fn get_camera(dev: &str) -> io::Result<Camera> {
+fn get_camera(dev: &str, ctrls: &CamControls) -> io::Result<Camera> {
     println!("conf: {:?}", dev);
-    configure_camera(&dev)?;
+    configure_camera(&dev, ctrls)?;
     println!("conf done: {:?}", dev);
 
     let mut camera = Camera::new(dev)?;
@@ -94,9 +94,9 @@ fn check_timing(cam_dev: &str, t: u64, prev: u64) {
     }
 }
 
-pub fn record(path: PathBuf, cam_dev: &str) {
+pub fn record(path: PathBuf, cam_dev: &str, ctrls: &CamControls) {
     fs::create_dir_all(&path).unwrap();
-    let cam = get_camera(cam_dev).expect("Failed to get camera");
+    let cam = get_camera(cam_dev, ctrls).expect("Failed to get camera");
 
     // clear empty frames
     for _ in 0..BUF_NUM {

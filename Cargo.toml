@@ -3,9 +3,12 @@ name = "oscar_rec"
 version = "0.1.0"
 authors = ["newpavlov <newpavlov@gmail.com>"]
 license = "MIT OR Apache-2.0"
+description = "Data recording tool for OS:Car project"
 repository = "https://github.com/newpavlov/oscar-rec"
 
 [dependencies]
 rscam = "^0.5.4"
 serial = "0.4"
+structopt = "0.2"
+structopt-derive = "0.2"
 inter_sense = { path = "../inter_sense/" }

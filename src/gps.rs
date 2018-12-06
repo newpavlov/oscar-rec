@@ -2,8 +2,8 @@ use serial;
 use serial::SerialPort;
 use std::io;
 use std::fs::File;
-use std::io::{Write, BufRead, BufReader};
-use std::path::PathBuf;
+use std::io::{Write, BufRead, BufWriter, BufReader};
+use std::path::Path;
 use std::time::{Duration, SystemTime};
 
 // timestamp in microseconds of UNIX epoch
@@ -14,10 +14,9 @@ fn get_timestamp_us() -> u64 {
     1_000_000*t.as_secs() + (t.subsec_micros() as u64)
 }
 
-pub fn record(path: &str, port: &str) -> io::Result<()> {
-    let mut path_buf = PathBuf::from(path);
-    path_buf.push("gps.log");
-    let mut file = File::create(path_buf)?;
+pub fn record(path: &Path, port: &str) -> io::Result<()> {
+    let path = path.join("gps.log");
+    let mut file = BufWriter::new(File::create(path)?);
 
     let mut port = serial::open(port)?;
     let settings = serial::PortSettings {
