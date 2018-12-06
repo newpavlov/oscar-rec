@@ -11,4 +11,7 @@ rscam = "^0.5.4"
 serial = "0.4"
 structopt = "0.2"
 structopt-derive = "0.2"
-inter_sense = { path = "../inter_sense/" }
+inter_sense = { path = "inter_sense/" }
+
+[workspace]
+members = ["inter_sense"]
