@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use utils::get_timestamp_us;
 
-pub fn record(path: &Path, port: &str) -> io::Result<()> {
+pub fn record(path: &Path, port: &Path) -> io::Result<()> {
     let path = path.join("gps.log");
     let mut file = BufWriter::new(File::create(path)?);
 

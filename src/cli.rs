@@ -8,6 +8,9 @@ pub struct Cli {
     #[structopt(parse(from_os_str))]
     /// Path to camera device
     pub path: PathBuf,
+    #[structopt(long = "gps", default_value="/dev/ttyUSB1", parse(from_os_str))]
+    /// Path to GPS serial port
+    pub gps_path: PathBuf,
     #[structopt(flatten)]
     pub cam_ctrls: CamControls
 }

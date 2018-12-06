@@ -54,7 +54,7 @@ fn main() {
 
     thread::Builder::new().name("gps".into())
         .spawn(move|| {
-            gps::record(&args.path, "/dev/ttyUSB1")
+            gps::record(&args.path, &args.gps_path)
                 .expect("failed to record GPS")
         }).unwrap();
 
