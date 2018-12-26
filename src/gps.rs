@@ -2,7 +2,7 @@ use serial;
 use serial::SerialPort;
 use std::io;
 use std::fs::File;
-use std::io::{Write, BufRead, BufWriter, BufReader};
+use std::io::{Write, BufRead, BufReader};
 use std::path::Path;
 use std::time::Duration;
 
@@ -10,7 +10,7 @@ use utils::get_timestamp_us;
 
 pub fn record(path: &Path, port: &Path) -> io::Result<()> {
     let path = path.join("gps.log");
-    let mut file = BufWriter::new(File::create(path)?);
+    let mut file = File::create(path)?;
 
     let mut port = serial::open(port)?;
     port.configure(&serial::PortSettings {

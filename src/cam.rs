@@ -39,7 +39,7 @@ pub fn configure_camera(dev: &str, ctrls: &CamControls) -> io::Result<()> {
     }
     */
 
-    cam.set_control(TRIGGER_DELAY_ID, 0)?;
+    cam.set_control(TRIGGER_DELAY_ID, 10)?;
     cam.set_control(TRIGGER_MODE_ID, true)?;
     cam.set_control(SHUTTER_AUTO_ID, false)?;
     cam.set_control(EXPOSURE_TIME_US_ID, ctrls.exposure)?;
